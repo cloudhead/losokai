@@ -1,0 +1,112 @@
+
+
+
+                                LOURLAND
+
+                             design document
+
+
+
+ABILITIES
+
+  * phase shifting
+
+  Allows the character to be temporarily out of harm from any dangers which
+  would otherwise hurt or kill the character. In this state, the character has
+  limited sensory input and almost no ability to affect or communicate with
+  the physical world. However, the character can communicate with other
+  characters in the same phase.
+
+ENERGY
+
+  Energy is the primary resource used by players. It can be either stored in
+  energy cells (such as batteries) or channeled in the following ways:
+  
+  * defensive
+
+  When channeled into shields or body armor, energy increases the character's
+  tolerance to heat, cold, radiation and impact.
+
+  * offensive
+
+  When channeled into weapons, energy increases firepower.
+
+  * sensory
+
+  When channeled into sensory implants, scanners, radars or flashlights, energy
+  increases range and effectiveness.
+
+ENERGY SOURCES
+
+  * geothermal
+
+  ...
+
+  * generated
+
+  ...
+
+  * stored
+
+  ...
+
+ATTRIBUTES
+
+  * stamina
+
+  Fast to deplete and replenish, stamina is necessary when performing physical
+  activities such as running, jumping or carrying weight. It replenishes when the
+  character is at rest.
+
+  * rest
+
+  ...
+
+  * hydration
+
+  ...
+
+WEAPONS
+
+  * Biogun
+
+  The Biogun is a cybernetic energy gun which can enter in symbiosis with a human, turning
+  stamina into firepower.
+
+  * shotgun
+
+  ...
+
+  * plasma rifle
+
+  ...
+  
+MODS
+
+  All weapons and wearable items can be modded to provide additional range, power or precision.
+
+RESOURCES
+
+  ...
+
+PARTS
+
+  sources
+
+  * looting/scavenging
+  * salvaging
+
+COLLABORATION
+
+  intentions
+
+  Players collaborate by expressing intentions to each other.
+
+COMBAT
+
+  ballistics
+
+A.I.
+
+  ...
+
