@@ -41,7 +41,7 @@ void rFreeMdl(struct model *m)
 
 static bool rLoadMdlMeshMaterial(struct mesh *m, const char *shader, const char *dir)
 {
-	char *path = sdscat(sdsnew(dir), "/textures");
+	char *path = sdscatprintf(sdsnew("assets"), "/%s/textures", sdsnew(dir));
 	struct shader *s = rGetShader(shader);
 
 	if (! s) {
@@ -63,7 +63,7 @@ static bool rLoadMdlMeshMaterial(struct mesh *m, const char *shader, const char 
 static bool rLoadMdlMetadata(struct model *mdl, const char *dir)
 {
 	char line[512], cmd[32], val[256];
-	char *path = sdscatprintf(sdsnew(dir), "/%s.meta", mdl->name);
+	char *path = sdscatprintf(sdsnew("assets"), "/%s/%s.meta", dir, mdl->name);
 
 	FILE *fp = fopen(path, "r");
 
@@ -87,7 +87,7 @@ static bool rLoadMdlMetadata(struct model *mdl, const char *dir)
 
 static bool rLoadMdlMeshes(struct model *mdl, const char *dir)
 {
-	char *path = sdscatprintf(sdsnew(dir), "/%s.mesh", mdl->name);
+	char *path = sdscatprintf(sdsnew("assets"), "/%s/%s.mesh", dir, mdl->name);
 	FILE *fp = fopen(path, "rb");
 
 	rLoadMdlMetadata(mdl, dir);
@@ -149,20 +149,12 @@ static bool rLoadMdlMeshes(struct model *mdl, const char *dir)
 		fread(&m->nvertices, 4, 1, fp);
 		assert(m->nvertices > 0);
 		m->vertices = malloc(m->nvertices * sizeof(struct vertex));
+		fread(m->vertices, sizeof(struct vertex), m->nvertices, fp);
 
-		for (int j = 0; j < m->nvertices; j++) {
-			fread(&m->vertices[j].pos, sizeof(float), 3, fp);
-			fread(&m->vertices[j].normal, sizeof(float), 3, fp);
-			fread(&m->vertices[j].tangent, sizeof(float), 4, fp);
-			fread(&m->vertices[j].uv, sizeof(float), 2, fp);
-		}
 		fread(&m->nfaces, 4, 1, fp);
 		assert(m->nfaces > 0);
 		m->faces = malloc(m->nfaces * sizeof(unsigned int) * 3);
-
-		for (int j = 0; j < m->nfaces * 3; j++) {
-			fread(&m->faces[j], sizeof(unsigned int), 1, fp);
-		}
+		fread(m->faces, sizeof(unsigned int), m->nfaces * 3, fp);
 		meshInit(m);
 	}
 	sdsfree(path);

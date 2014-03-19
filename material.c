@@ -33,6 +33,7 @@ struct material *rNewBasicMaterial(struct shader *s)
 {
 	struct material *m = malloc(sizeof(*m));
 
+	memset(m, 0, sizeof(*m));
 	m->shader = s;
 
 	return m;

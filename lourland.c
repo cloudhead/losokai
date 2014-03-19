@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 	if (! rInitText2D("assets/font.tga")) {
 		fatalf("error loading fonts\n");
 	}
-	if (! (mdl = rOpenMdl("assets/default"))) {
+	if (! (mdl = rOpenMdl("default"))) {
 		fatalf("error importing model\n");
 	}
 

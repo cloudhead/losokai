@@ -1,8 +1,8 @@
 struct vertex {
 	vec3 pos;
+	vec2 uv;
 	vec3 normal;
 	vec4 tangent;
-	vec2 uv;
 };
 
 struct mesh {
