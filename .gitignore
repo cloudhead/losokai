@@ -1,0 +1,8 @@
+*.o
+*.d
+*.model
+lourland
+TODO
+*sublime*
+tmp
+assets

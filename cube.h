@@ -1,0 +1,1 @@
+struct mesh *rNewCube();
