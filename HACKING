@@ -1,5 +1,5 @@
 FUNCTION PREFIXES
 
 r- : functions related to the graphics renderer
-n- : functions related to network layer
+n- : functions related to the network layer
 g- : functions related to the game
