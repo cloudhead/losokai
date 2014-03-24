@@ -1,17 +1,19 @@
 CC      := clang
 CFLAGS  := -msse4.1 -Wall -Wno-missing-braces -fstrict-aliasing -pedantic -std=c11 -O0 -g
 LDFLAGS := -DGLEW_STATIC -lGL -lGLEW -lglfw -lm
-INCS    := -I../
+INCS    := -I./
 CSRC    := $(wildcard *.c)
 SSRC    := $(wildcard *.s)
 OBJ     := $(CSRC:.c=.o) $(SSRC:.s=.o)
 TARGET  := lourland
-TOOLS   := tools/lconvert
+TARGETS := $(TARGET)
 
-all: $(TARGET) $(TOOLS)
+all: targets
 
-$(TOOLS): $(wildcard tools/*.c)
-	$(MAKE) -C tools
+dir := tools
+include $(dir)/Rules.mk
+
+targets: $(TARGETS)
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $(INCS) -o $@ $<
@@ -29,5 +31,5 @@ $(TARGET): $(OBJ)
 
 clean:
 	rm -f $(OBJ) *.d
-	[ -f $(TARGET) ] && rm $(TARGET)
+	rm -f $(TARGETS)
 
