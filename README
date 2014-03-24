@@ -5,10 +5,11 @@
 
 DEPENDENCIES
 
-	* clang
-	* OpenGL 3.3
-	* GLFW 3
-	* GLEW
+	* clang (http://clang.llvm.org/)
+	* OpenGL 3.3 (http://www.opengl.org/)
+	* GLFW 3 (http://www.glfw.org/)
+	* GLEW (http://glew.sourceforge.net/)
+	* Assimp (http://assimp.sourceforge.net/)
 
 BUILDING
 
