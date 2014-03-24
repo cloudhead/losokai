@@ -1,0 +1,23 @@
+
+
+	lourland
+
+
+DEPENDENCIES
+
+	* clang
+	* OpenGL 3.3
+	* GLFW 3
+	* GLEW
+
+BUILDING
+
+	$ make -j 4
+
+RUNNING
+
+	$ ./lourland
+
+CONTRIBUTING
+
+	See /HACKING and /STYLEGUIDE
