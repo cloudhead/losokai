@@ -10,6 +10,7 @@ out vec2 textureCoord;
 out vec3 viewDirTan;
 out vec3 lightDirTan;
 out vec3 lightPosWorld;
+out vec3 vertexNormal;
 
 uniform vec3 lightPos;
 uniform mat4 model;
@@ -22,7 +23,7 @@ void main()
 	vec3 lightDirWorld = lightPos - vec3(model * vec4(position, 1.0));
 	vec3 cameraPosWorld = (inverse(view) * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
 	vec3 cameraPosLoc = vec3(inverse(model) * vec4(cameraPosWorld, 1.0));
-	vec3 viewDirLoc = normalize(cameraPosLoc - position);
+	vec3 viewDirLoc = cameraPosLoc - position;
 	vec3 lightDirLoc = vec3(inverse(model) * vec4(lightDirWorld, 0.0));
 
 	mat3 TBN = transpose(
@@ -32,8 +33,10 @@ void main()
 			normal
 		)
 	);
-	lightDirTan = TBN * lightDirLoc;
-	viewDirTan = TBN * viewDirLoc;
+
+	vertexNormal = TBN * normal;
+	lightDirTan = normalize(TBN * lightDirLoc);
+	viewDirTan = normalize(TBN * viewDirLoc);
 
 	gl_Position = proj * view * model * vec4(position, 1);
 	fragPosWorld = (model * vec4(position, 1)).xyz;

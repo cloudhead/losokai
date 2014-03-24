@@ -20,6 +20,13 @@
 #include "renderer.h"
 #include "text.h"
 
+struct options {
+	int  renderMode;
+	bool tonemapEnabled;
+	bool debugMode;
+};
+
+static const int RENDER_MODES = 6;
 static const int WIDTH = 800;
 static const int HEIGHT = 600;
 static const int CMD_PORT = 8000;
@@ -43,11 +50,15 @@ static void keyCallback(GLFWwindow *win, int key, int scan, int action, int mods
 	if (action != GLFW_PRESS)
 		return;
 
-	int *renderMode = glfwGetWindowUserPointer(win);
+	struct options *opts = glfwGetWindowUserPointer(win);
 
 	if (key == GLFW_KEY_R) {
-		(*renderMode)++;
-		*renderMode %= 5;
+		opts->renderMode++;
+		opts->renderMode %= RENDER_MODES;
+	} else if (key == GLFW_KEY_T) {
+		opts->tonemapEnabled = !opts->tonemapEnabled;
+	} else if (key == GLFW_KEY_F3) {
+		opts->debugMode = !opts->debugMode;
 	}
 }
 
@@ -101,10 +112,10 @@ int main(int argc, char *argv[])
 		fatalf("error importing model\n");
 	}
 
-	int renderMode = 0;
+	struct options opts = {0, true, false};
 	double lastFrame = 0;
 	glfwSetTime(lastFrame);
-	glfwSetWindowUserPointer(win, &renderMode);
+	glfwSetWindowUserPointer(win, &opts);
 
 	float fov = 45.0f;
 	float lx = PI;
@@ -212,6 +223,7 @@ int main(int argc, char *argv[])
 			// Setup shaders
 			//
 			// TODO(cloudhead): Share `proj` and `view` uniforms amongst shaders.
+			// TOOD(cloudhead): Pass the options struct directly as a uniform.
 			//
 			for (struct shaderSource *src = SHADER_SOURCES; src->name != NULL; src++) {
 				struct shader *s = rGetShader(src->name);
@@ -232,7 +244,9 @@ int main(int argc, char *argv[])
 						vec3 delta    = vec3sub(zero, world);
 						keyLight->pos = vec3add(keyLight->pos, delta);
 					}
-					rSetUniform1i(s, "renderMode", renderMode);
+					rSetUniform1i(s, "renderMode", opts.renderMode);
+					rSetUniform1i(s, "tonemapEnabled", opts.tonemapEnabled);
+					rSetUniform1i(s, "debugMode", opts.debugMode);
 					rSetUniformMatrix4fv(s, "proj", &cam->proj);
 					rSetUniformMatrix4fv(s, "view", &cam->view);
 					rSetUniform3fv(s, "lightPos", &keyLight->pos);
