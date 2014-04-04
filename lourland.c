@@ -32,10 +32,11 @@ static const int HEIGHT = 600;
 static const int CMD_PORT = 8000;
 
 static struct shaderSource SHADER_SOURCES[] = {
-	{"default", "shaders/blinn.vert",  "shaders/blinn.frag"},
-	{"flat",    "shaders/mvp.vert",    "shaders/flat.frag"},
-	{"text",    "shaders/text.vert",   "shaders/text.frag"},
-	{NULL,      NULL,                  NULL}
+	{"blinn",    "shaders/blinn.vert",  "shaders/blinn.frag"},
+	{"constant", "shaders/mvp.vert",    "shaders/constant.frag"},
+	{"text",     "shaders/text.vert",   "shaders/text.frag"},
+	{"default",  "shaders/flat.vert",   "shaders/flat.frag"},
+	{NULL,       NULL,                  NULL}
 };
 
 _Static_assert(sizeof(vec4) == sizeof(float) * 4, "vec4 is tightly packed");
@@ -120,15 +121,15 @@ int main(int argc, char *argv[])
 	float fov = 45.0f;
 	float lx = PI;
 	float ly = 0.0f;
-	float lspeed = 0.05f; // Look speed
-	float mspeed = 3.0f; // Move speed
-	vec3 pos = (vec3){0, 0, 5}; // Camera position
+	float lspeed = 0.03f; // Look speed
+	float mspeed = 5.0f; // Move speed
+	vec3 pos = (vec3){0, 1, 10}; // Camera position
 
 	struct light *keyLight = rNewLight();
 	keyLight->pos = (vec3){0, 5, 1};
 	keyLight->visibility = 2;
 
-	struct camera *cam = rNewCamera(pos, WIDTH, HEIGHT, fov);
+	struct camera *cam = rNewCamera(pos, WIDTH, HEIGHT, fov, 0.1f, 1000.0f);
 	struct network *net = nNewCommandInterface(CMD_PORT);
 
 	if (! net) {

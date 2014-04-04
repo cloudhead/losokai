@@ -14,6 +14,7 @@
 
 static struct {
 	GLuint          vbo;
+	GLuint          vao;
 	struct shader  *shader;
 	struct texture *texture;
 } TEXT2D;
@@ -33,6 +34,9 @@ bool rInitText2D(const char *path)
 	TEXT2D.shader = s;
 
 	rUseShader(0);
+
+	glGenVertexArrays(1, &TEXT2D.vao);
+	glBindVertexArray(TEXT2D.vao);
 	glGenBuffers(1, &TEXT2D.vbo);
 
 	return true;
@@ -81,6 +85,7 @@ void rDrawText2D(const char *str, int len, int x, int y, int size)
 		*uvp++ = se;
 	}
 	rUseShader(TEXT2D.shader);
+		glBindVertexArray(TEXT2D.vao);
 		glBindBuffer(GL_ARRAY_BUFFER, TEXT2D.vbo);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices) + sizeof(uvs), NULL, GL_STATIC_DRAW);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
@@ -104,5 +109,6 @@ void rDrawText2D(const char *str, int len, int x, int y, int size)
 		glDisable(GL_BLEND);
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
+		glBindVertexArray(0);
 	rUseShader(0);
 }

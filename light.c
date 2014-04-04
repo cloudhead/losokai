@@ -29,10 +29,10 @@ void rDrawLight(struct light *l)
 
 	if (l->visibility == VISIBILITY_DEBUG) { // Draw light source
 		if (LIGHT_SOURCE == NULL) {
-			LIGHT_SOURCE = rNewCube();
+			LIGHT_SOURCE = rNewSphere(1, 10);
 		}
 		mat4 model = mat4scale(mat4identity(), 0.1f);
 		model = mat4translate(model, l->pos);
-		rMeshDraw(LIGHT_SOURCE, &model);
+		rDrawMesh(LIGHT_SOURCE, &model);
 	}
 }

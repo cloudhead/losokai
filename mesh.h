@@ -1,10 +1,3 @@
-struct vertex {
-	vec3 pos;
-	vec2 uv;
-	vec3 normal;
-	vec4 tangent;
-};
-
 struct mesh {
 	char            *name;
 	GLuint          vbo;
@@ -15,10 +8,11 @@ struct mesh {
 	unsigned int    *faces;
 	size_t          nfaces;
 	struct material *material;
+	struct skeleton *skeleton;
 	bool            isVisible;
 };
 
 extern void meshInit(struct mesh *);
 extern void meshFree(struct mesh *);
-extern void rMeshDraw(struct mesh *, mat4 *);
-extern struct mesh *rNewMesh(const char *);
+extern void rDrawMesh(struct mesh *, mat4 *);
+extern struct mesh *rNewMesh(const char *, struct material *, size_t, struct vertex *, size_t, unsigned int *, struct skeleton *);

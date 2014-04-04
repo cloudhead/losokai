@@ -15,12 +15,19 @@
 #include "linmath.h"
 #include "shader.h"
 #include "texture.h"
+#include "common.h"
 #include "mesh.h"
 #include "model.h"
 #include "sds.h"
 #include "material.h"
+#include "util.h"
+#include "skeleton.h"
 
-#define MAGIC_NUMBER 236
+static const int  MAGIC_NUMBER  = 236;
+static const char ASSET_DIR[]   = "assets";
+static const char TEXTURE_DIR[] = "textures";
+static const char META_EXT[]    = ".meta";
+static const char MESH_EXT[]    = ".mesh";
 
 char *strdup(const char *s);
 
@@ -39,21 +46,24 @@ void rFreeMdl(struct model *m)
 	free(m);
 }
 
-static bool rLoadMdlMeshMaterial(struct mesh *m, const char *shader, const char *dir)
+static struct material *rLoadMdlMaterial(char *name, const char *shader, const char *dir)
 {
-	char *path = sdscatprintf(sdsnew("assets"), "/%s/textures", sdsnew(dir));
+	const char *parts[] = {ASSET_DIR, dir, TEXTURE_DIR};
+	char *path = sdsjoin((char **)parts, 3, "/", 1);
+
 	struct shader *s = rGetShader(shader);
+	struct material *mat;
 
 	if (! s) {
 		fprintf(stderr, "couldn't find shader '%s'.\n", shader);
-		return false;
+		return NULL;
 	}
-	if (! (m->material = rNewMaterial(s, path, m->name))) {
-		m->material = rNewBasicMaterial(s);
+	if (! (mat = rNewMaterial(s, path, name))) {
+		mat = rNewBasicMaterial(s);
 	}
 	sdsfree(path);
 
-	return true;
+	return mat;
 }
 
 // File format:
@@ -62,8 +72,9 @@ static bool rLoadMdlMeshMaterial(struct mesh *m, const char *shader, const char 
 //
 static bool rLoadMdlMetadata(struct model *mdl, const char *dir)
 {
+	const char *parts[] = {ASSET_DIR, (char *)dir, (char *)mdl->name};
+	char *path = sdscat(sdsjoin((char **)parts, 3, "/", 1), META_EXT);
 	char line[512], cmd[32], val[256];
-	char *path = sdscatprintf(sdsnew("assets"), "/%s/%s.meta", dir, mdl->name);
 
 	FILE *fp = fopen(path, "r");
 
@@ -87,7 +98,9 @@ static bool rLoadMdlMetadata(struct model *mdl, const char *dir)
 
 static bool rLoadMdlMeshes(struct model *mdl, const char *dir)
 {
-	char *path = sdscatprintf(sdsnew("assets"), "/%s/%s.mesh", dir, mdl->name);
+	const char *parts[] = {ASSET_DIR, dir, mdl->name};
+	char *path = sdscat(sdsjoin((char **)parts, 3, "/", 1), MESH_EXT);
+
 	FILE *fp = fopen(path, "rb");
 
 	rLoadMdlMetadata(mdl, dir);
@@ -108,18 +121,22 @@ static bool rLoadMdlMeshes(struct model *mdl, const char *dir)
 	mdl->meshes = malloc(mdl->nmeshes * sizeof(struct mesh *));
 
 	for (int i = 0; i < mdl->nmeshes; i++) {
-		struct mesh *m = mdl->meshes[i] = rNewMesh(NULL);
+		unsigned int material = 0;
+		struct material *mat = NULL;
+		struct vertex *vertices = NULL;
+		unsigned int *faces = NULL;
+		size_t nfaces = 0;
+		size_t nvertices = 0;
 
-		{ // Read mesh name
-			int len = fgetc(fp);
+		// Read mesh name
+		int len = fgetc(fp);
+		char name[len + 1];
 
-			if (len > 0) {
-				m->name = malloc(len + 1);
-				fread(m->name, len, 1, fp);
-				m->name[len] = '\0';
-			} else {
-				m->name = strdup(mdl->name);
-			}
+		if (len > 0) {
+			fread(name, len, 1, fp);
+			name[len] = '\0';
+		} else {
+			strcpy(name, mdl->name);
 		}
 
 		{ // Read shader name and load material
@@ -132,30 +149,45 @@ static bool rLoadMdlMeshes(struct model *mdl, const char *dir)
 			} else {
 				sprintf(shader, "default");
 			}
-			if (! rLoadMdlMeshMaterial(m, shader, dir)) {
+			if (! (mat = rLoadMdlMaterial(name, shader, dir))) {
 				fprintf(stderr, "couldn't load mesh material.\n");
-				m->isVisible = false;
 			}
 		}
 
-		unsigned int material;
+		// XXX: Unused
 		fread(&material, sizeof(material), 1, fp);
 
-		m->vertices = NULL;
-		m->faces = NULL;
-		m->nfaces = 0;
-		m->nvertices = 0;
+		struct skeleton *sk = malloc(sizeof(*sk));
 
-		fread(&m->nvertices, 4, 1, fp);
-		assert(m->nvertices > 0);
-		m->vertices = malloc(m->nvertices * sizeof(struct vertex));
-		fread(m->vertices, sizeof(struct vertex), m->nvertices, fp);
+		sk->bones = NULL;
+		sk->nbones = 0;
 
-		fread(&m->nfaces, 4, 1, fp);
-		assert(m->nfaces > 0);
-		m->faces = malloc(m->nfaces * sizeof(unsigned int) * 3);
-		fread(m->faces, sizeof(unsigned int), m->nfaces * 3, fp);
-		meshInit(m);
+		// Read bones
+		fread(&sk->nbones, 4, 1, fp);
+
+		sk->bones = malloc(sk->nbones * sizeof(struct bone));
+
+		for (int j = 0; j < sk->nbones; j++) {
+			freadstr(&sk->bones[j].name, fp);
+			fread(&sk->bones[j].offset, sizeof(mat4), 1, fp);
+			fread(&sk->bones[j].transform, sizeof(mat4), 1, fp);
+			fread(&sk->bones[j].parentId, 4, 1, fp);
+			sk->bones[j].length = 0.1f;
+		}
+
+		// Read vertices
+		fread(&nvertices, 4, 1, fp);
+		assert(nvertices > 0);
+		vertices = malloc(nvertices * sizeof(struct vertex));
+		fread(vertices, sizeof(struct vertex), nvertices, fp);
+
+		// Read faces
+		fread(&nfaces, 4, 1, fp);
+		assert(nfaces > 0);
+		faces = malloc(nfaces * sizeof(unsigned int) * 3);
+		fread(faces, sizeof(unsigned int), nfaces * 3, fp);
+
+		mdl->meshes[i] = rNewMesh(name, mat, nvertices, vertices, nfaces, faces, sk);
 	}
 	sdsfree(path);
 
@@ -165,8 +197,6 @@ static bool rLoadMdlMeshes(struct model *mdl, const char *dir)
 void rDrawMdl(struct model *mdl)
 {
 	mat4 model = mat4identity();
-
-	model = mat4scale(model, 0.01f);
 
 	for (int i = 0; i < mdl->nmeshes; i++) {
 		if (! mdl->meshes[i]->isVisible)
@@ -201,6 +231,14 @@ void rDrawMdl(struct model *mdl)
 		glEnableVertexAttribArray(uvAttrib);
 		glVertexAttribPointer(uvAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(struct vertex), (void *)offsetof(struct vertex, uv));
 
+		GLint bonesAttrib = glGetAttribLocation(program, "bones");
+		glEnableVertexAttribArray(bonesAttrib);
+		glVertexAttribIPointer(bonesAttrib, 4, GL_INT, sizeof(struct vertex), (void *)offsetof(struct vertex, bones));
+
+		GLint weightsAttrib = glGetAttribLocation(program, "weights");
+		glEnableVertexAttribArray(weightsAttrib);
+		glVertexAttribPointer(weightsAttrib, 4, GL_FLOAT, GL_FALSE, sizeof(struct vertex), (void *)offsetof(struct vertex, weights));
+
 		// Bind textures
 		for (int j = 0; j < TEXTURE_TYPES; j++) {
 			struct texture *t = mdl->meshes[i]->material->textures[j];
@@ -222,6 +260,11 @@ void rDrawMdl(struct model *mdl)
 		glDrawElements(GL_TRIANGLES, mdl->meshes[i]->nfaces * 3, GL_UNSIGNED_INT, 0);
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glUseProgram(0);
+		glBindVertexArray(0);
+
+		glDisable(GL_DEPTH_TEST);
+		rDrawSkeleton(mdl->meshes[i]->skeleton, &model);
+		glEnable(GL_DEPTH_TEST);
 	}
 }
 

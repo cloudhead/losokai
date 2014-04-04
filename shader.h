@@ -18,4 +18,5 @@ extern void rUnloadShaders(struct shaderSource *);
 extern void rUseShader(struct shader *);
 extern void rSetUniformMatrix4fv(struct shader *, const char *, mat4 *);
 extern void rSetUniform3fv(struct shader *, const char *, vec3 *);
+extern void rSetUniform4fv(struct shader *, const char *, vec4 *);
 extern void rSetUniform1i(struct shader *, const char *, GLint);

@@ -156,6 +156,19 @@ void rSetUniform3fv(struct shader *s, const char *name, vec3 *v)
 }
 
 // TODO(cloudhead): Optimize lookup with a cache.
+void rSetUniform4fv(struct shader *s, const char *name, vec4 *v)
+{
+	GLint loc;
+
+	if ((loc = glGetUniformLocation(s->handle, name)) == -1) {
+		// TODO(cloudhead): Log error.
+		fprintf(stderr, "couldn't get uniform location for '%s'\n", name);
+		return;
+	}
+	glUniform4fv(loc, 1, (float *)v);
+}
+
+// TODO(cloudhead): Optimize lookup with a cache.
 void rSetUniform1i(struct shader *s, const char *name, GLint i)
 {
 	GLint loc;

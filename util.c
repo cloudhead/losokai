@@ -40,3 +40,15 @@ const char *readfile(const char *path)
 	return buffer;
 }
 
+int freadstr(char **strp, FILE *fp)
+{
+	int len = fgetc(fp);
+
+	if (len > 0) {
+		*strp = malloc(len + 1);
+		fread(*strp, len, 1, fp);
+	}
+	(*strp)[len] = '\0';
+
+	return len;
+}

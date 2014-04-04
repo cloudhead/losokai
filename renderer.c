@@ -18,11 +18,13 @@ void rInitRenderer()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_STENCIL_TEST);
 	glEnable(GL_FRAMEBUFFER_SRGB);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void rClear()
 {
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -30,7 +32,7 @@ void rDrawFrameTime(double ft)
 {
 	char str[128];
 
-	sprintf(str, "frame time: %.2fms", ft);
+	sprintf(str, "frame time: %.3fms", ft);
 	rDrawText2D(str, strlen(str), 10, 576, 16);
 }
 

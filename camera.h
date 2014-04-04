@@ -15,6 +15,6 @@ struct camera {
     int resy;
 };
 
-extern struct camera *rNewCamera(vec3 pos, int width, int height, float fov);
+extern struct camera *rNewCamera(vec3, int, int, float, float, float);
 extern void rCameraMove(struct camera *c, vec3 dir);
 extern void rCameraLookAt(struct camera *c, vec3 dir, vec3 up);

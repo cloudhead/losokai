@@ -1,7 +1,7 @@
 CC      := clang
-CFLAGS  := -msse4.1 -Wall -Wno-missing-braces -fstrict-aliasing -pedantic -std=c11 -O0 -g
+CFLAGS  := -msse4.1 -Wall -Werror -Wno-missing-braces -fstrict-aliasing -pedantic -std=c11 -O0 -g
 LDFLAGS := -DGLEW_STATIC -lGL -lGLEW -lglfw -lm
-INCS    := -I./
+INCS    := -I./include
 CSRC    := $(wildcard *.c)
 SSRC    := $(wildcard *.s)
 OBJ     := $(CSRC:.c=.o) $(SSRC:.s=.o)

@@ -4,6 +4,8 @@
 #include <GL/glew.h>
 
 #include "texture.h"
+#include "linmath.h"
+#include "shader.h"
 #include "material.h"
 #include "sds.h"
 
@@ -53,5 +55,12 @@ struct material *rNewMaterial(struct shader *s, const char *dir, const char *nam
 		return NULL;
 
 	return m;
+}
+
+void rSetMaterialProperty4fv(struct material *m, const char *property, vec4 val)
+{
+	rUseShader(m->shader);
+	rSetUniform4fv(m->shader, property, &val);
+	rUseShader(0);
 }
 

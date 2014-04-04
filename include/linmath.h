@@ -41,7 +41,15 @@ union vec4 {
 };
 
 struct mat4 {
-	vec4 cols[4];
+	union {
+		vec4 cols[4];
+		struct {
+			float a1, a2, a3, a4;
+			float b1, b2, b3, b4;
+			float c1, c2, c3, c4;
+			float d1, d2, d3, d4;
+		};
+	};
 };
 
 static const float PI = 3.14149265359f;
@@ -168,12 +176,10 @@ static inline void mat4print(mat4 m, FILE *fp)
 
 static inline mat4 mat4identity() {
 	static mat4 identity = (mat4){
-		{
-			{1.0f, 0.0f, 0.0f, 0.0f},
-			{0.0f, 1.0f, 0.0f, 0.0f},
-			{0.0f, 0.0f, 1.0f, 0.0f},
-			{0.0f, 0.0f, 0.0f, 1.0f}
-		}
+		1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f
 	};
 	return identity;
 }
@@ -231,12 +237,10 @@ static inline mat4 mat4rotateX(mat4 M, float angle)
 	float s = sinf(angle);
 	float c = cosf(angle);
 	mat4 R = {
-		{
-			{1.0f, 0.0f, 0.0f, 0.0f},
-			{0.0f,    c,    s, 0.0f},
-			{0.0f,   -s,    c, 0.0f},
-			{0.0f, 0.0f, 0.0f, 1.0f}
-		}
+		1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f,    c,    s, 0.0f,
+		0.0f,   -s,    c, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f
 	};
 	return mat4mul(M, R);
 }
@@ -246,12 +250,10 @@ static inline mat4 mat4rotateY(mat4 M, float angle)
 	float s = sinf(angle);
 	float c = cosf(angle);
 	mat4 R = {
-		{
-			{   c, 0.0f,    s, 0.0f},
-			{0.0f, 1.0f, 0.0f, 0.0f},
-			{  -s, 0.0f,    c, 0.0f},
-			{0.0f, 0.0f, 0.0f, 1.0f}
-		}
+		   c, 0.0f,    s, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		  -s, 0.0f,    c, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f
 	};
 	return mat4mul(M, R);
 }
@@ -261,12 +263,10 @@ static inline mat4 mat4rotateZ(mat4 M, float angle)
 	float s = sinf(angle);
 	float c = cosf(angle);
 	mat4 R = {
-		{
-			{  c,   s, 0.f, 0.f},
-			{ -s,   c, 0.f, 0.f},
-			{0.f, 0.f, 1.f, 0.f},
-			{0.f, 0.f, 0.f, 1.f}
-		}
+		   c,    s, 0.0f, 0.0f,
+		  -s,    c, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f
 	};
 	return mat4mul(M, R);
 }
@@ -316,12 +316,11 @@ static inline mat4 mat4invert(mat4 M)
 	return T;
 }
 
-static inline mat4 mat4perspective(float y_fov, float aspect, float n, float f)
+static inline mat4 mat4perspective(float fov, float aspect, float n, float f)
 {
 	mat4 out;
 
-	//float const s = 1.f / tan(y_fov * 0.5f);
-	float const s = 1.0f;
+	float const s = 1.0f / tan(fov * 0.5f);
 
 	out.cols[0].x = s / aspect;
 	out.cols[0].y = 0.0f;
